@@ -183,7 +183,6 @@ states <- c(11:17, 21:27, 31:33, 35, 41:43, 50:53)
 results <- list()
 results_synth <- list()
 gaps <- list()
-effects <- list()
 
 for (i in states) {
     dataprep.out <-
@@ -210,22 +209,10 @@ for (i in states) {
                      time.plot             = c(1990:2009)
                      )
     results[[as.character(i)]] <- dataprep.out
-    synth.out.run <-  synth(results[[as.character(i)]])
-    results_synth[[as.character(i)]] <-synth.out.run
+    results_synth[[as.character(i)]] <- synth(results[[as.character(i)]])
     gaps[[as.character(i)]] <- results[[as.character(i)]]$Y1plot - (results[[as.character(i)]]$Y0plot %*% results_synth[[as.character(i)]]$solution.w)
-    effects[[as.character(i)]]<- measure_effect(dataprep.out,synth.out.run)
+
 }
-
-identifiers <- names(effects)
-effect_df <- tibble::enframe(unlist(effects))
-ggplot(data=effect_df) +
-  geom_histogram(aes(x=value,fill=name),binwidth = 5) 
-
-hist(as.numeric(effects),breaks = 10,
-     xlab = "Observed - Placebo (area under curve after treatment)",
-     main="Treatment effects for all states")
-title(sub="Red line for Sao Paulo")
-abline(v=effects['35'],col="red")
 
 # Permutation test: graph
 ## Permutation test
@@ -286,22 +273,8 @@ legend(x = "bottomleft",
 
 invisible(dev.off())
 
-low.mspe_effects <- list()
-
 # Permutation graph: states with MSPE no higher than 2x São Paulo's
-low.mspe <- c(13, 15, 17, 21, 23, 24, 25, 31, 41,42,43, 53)
-gaps_df <- as.data.frame(do.call(rbind,lapply(gaps, as.vector)))
-gaps_df$code <- row.names(gaps_df)
-#sum gaps 
-for (i in 1:length(low.mspe)){
-  sum_after_treatment <- sum(unlist(as.numeric(gaps_df[which(gaps_df$code ==low.mspe[i]),11:20])))
-  low.mspe_effects[i] <- sum_after_treatment
-}
-hist(as.numeric(low.mspe_effects),breaks = 20,
-     xlab = "Observed - Placebo (area under curve after treatment)",
-     main="Treatment effects for states with MSPE < 2X Sao Paulo")
-title(sub="Red line for Sao Paulo")
-abline(v=effects['35'],col="red")
+low.mspe <- c(13, 15, 17, 21, 23, 24, 25, 31, 41:43, 53)
 
 setEPS()
 postscript(file    = "low-mspe.eps",
@@ -370,7 +343,6 @@ invisible(dev.off())
 # Load packages
 library(CausalImpact)
 library(MarketMatching)
-library(ggplot2)
 
 # Prepare data
 df$year2 <- as.Date(paste(df$year, sep = "", "-01-01"))
@@ -450,5 +422,3 @@ legend(x = "bottomleft",
 )
 
 invisible(dev.off())
-
-

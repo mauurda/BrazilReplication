@@ -108,10 +108,6 @@ print(synth.tables   <- synth.tab(
         dataprep.res = dataprep.out,
         synth.res    = synth.out)
       )
-#Pre-Treat Balance
-
-pret <- filter(df, year <1999)
-
 
 # Plot: Main model
 setEPS()
@@ -200,28 +196,3 @@ num.deaths.synthetic.sp <- sum( (0.274 * (df.2$homicide.rates[which(df.2$abbrevi
 
 lives.saved <- num.deaths.synthetic.sp - num.deaths.sp
 lives.saved # Between 1999 and 2009
-
-measure_effect <- function(dataprep.obj,synth.obj){
-  outersect <- function(x, y) {
-         sort(c(x[!x%in%y],
-     y[!y%in%x]))
-  }
-  treat_period <- outersect(unlist(dataprep.obj[["tag"]]["time.plot"]),unlist(dataprep.obj[["tag"]]["time.predictors.prior"]))
-  treat_start_ind <- which(unlist(dataprep.obj[["tag"]]["time.plot"])== unlist(treat_period[1]))
-  i = treat_start_ind
-  auc=0
-  while(i<= length(unlist(dataprep.obj[["tag"]]["time.plot"]))){
-    y0s <- dataprep.obj$Y0plot[i,]
-    cweights <- synth.obj$solution.w
-    vweights <- synth.obj$solution.v
-    effect<-dataprep.obj$Y1plot[i,1]-sum(unlist(y0s)*unlist(cweights))
-    auc= auc+effect
-    i=i+1
-  }
-    return(auc)
-    
-  }
-dataprep.obj<- dataprep.out
-synth.obj <- synth.out
-
-measure_effect(dataprep.out,synth.out)
